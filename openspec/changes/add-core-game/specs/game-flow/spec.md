@@ -47,7 +47,7 @@ A level SHALL be complete when every enemy has been popped or crushed, or when t
 - **THEN** "ROUND CLEAR" is shown and level 2 starts on a new board
 
 #### Scenario: Last enemy escapes
-- **WHEN** the last enemy walks off the left edge of the surface
+- **WHEN** the last enemy walks off a side edge of the surface
 - **THEN** the level ends and the next level starts, with no points for that enemy
 
 ### Requirement: Difficulty progression
@@ -63,6 +63,13 @@ The ghost interval SHALL be 9 seconds at level 1, shorten by 0.5 seconds per lev
 #### Scenario: Level 2 is harder
 - **WHEN** level 2 starts
 - **THEN** enemies roam faster or turn into ghosts sooner than on level 1, and nothing has become easier
+
+### Requirement: Endless levels
+Levels SHALL continue without limit. There SHALL be no final or broken level: level 256 and later SHALL be generated and played like any other level at the maximum difficulty.
+
+#### Scenario: Level 256
+- **WHEN** the player clears level 255
+- **THEN** level 256 starts with a valid board and 8 enemies
 
 ### Requirement: Pause
 During play the game SHALL pause when the player taps the pause button or presses P or Escape. Pausing SHALL stop all timers and movement and show "PAUSED" with Resume and Quit options. Resume SHALL show a 3-2-1 countdown before play continues. Quit SHALL return to the start screen.

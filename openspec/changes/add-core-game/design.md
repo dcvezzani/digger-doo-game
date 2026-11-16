@@ -29,7 +29,7 @@ This design reuses those patterns wherever the behavior is the same and calls ou
 **Non-Goals:**
 - Gamepad or tilt controls, two-player mode, intermissions, online leaderboards, hand-authored level maps. These can come in later changes.
 - Native app store builds.
-- Matching any existing arcade game's exact timings, layouts or quirks.
+- Matching any existing arcade game's exact timings, layouts or quirks. In particular, the reference game's round-256 overflow ("kill screen") is not reproduced: levels are endless.
 
 ## Decisions
 
@@ -136,7 +136,7 @@ The hose is a small state machine: `idle → extending → hooked | missed(coold
 
 **Hit test.** An enemy is hit when its center lies within 128 units (half a tile) of the hose line, measured across the line, and at most `len + 128` along it. Only solid, hookable enemies count, and the nearest one is chosen.
 
-**Hooked.** The hooked enemy holds `stage` and `lastPumpTick`. Deflation is checked in the enemy update: one stage is lost every 45 steps since the last pump. At stage 4 it pops, and the enemy enters `popped` for 30 steps (burst animation) before removal.
+**Hooked.** The hooked enemy holds `stage` and `lastPumpTick`. Deflation is checked in the enemy update: one stage is lost every 45 steps since the last pump. The first deflation also disconnects the hose, as in the reference game, where the pump lets go when the player stops pumping. At stage 4 it pops, and the enemy enters `popped` for 30 steps (burst animation) before removal.
 
 **Sizzler bonus.** A Sizzler popped by a hose pointing left or right scores double.
 
@@ -158,12 +158,13 @@ Each enemy has a kind (`gloop`/`sizzler`) and a state:
 | `fire` | Sizzler flame, 30 steps |
 
 - **Roam:** at tile centers, choose from open, boulder-free neighbors in rows 2–16. Never reverse unless that is the only option. With the level's chase chance, take the closest to Doo's tile using the tie order up, left, down, right; otherwise make a seeded random pick. In a 3-tile burrow this naturally bounces back and forth.
-- **Ghost:** free 2D movement. Each step, move `ghostSpeed` units along the normalized vector to Doo's center. The vector is computed with `Math.hypot` on integers; the result is rounded to integers each step, so it stays deterministic in V8. Positions are clamped to the board. Once `ghostSteps ≥ 90` and the tile under the center is open and boulder-free, snap to that tile's center and go back to `roam`.
+- **Ghost:** free 2D movement. Each step, move `ghostSpeed` units along the normalized vector to Doo's center. The vector is computed with `Math.hypot` on integers; the result is rounded to integers each step, so it stays deterministic in V8. Positions are clamped to the board. A `crossedDirt` flag is set once the tile under the center is solid. When the tile under the center is open and boulder-free, and either `crossedDirt` is set or `ghostSteps ≥ 90` (the fallback for a ghost that started over open ground), snap to that tile's center and go back to `roam`.
+- **Bolder when outnumbered:** each step `game.js` builds the enemy context's level values. When the remaining enemies are at most half the level's count, roam speed is ×1.15 and chase chance +0.15 (capped at 1).
 - **Flame:** checked at roam decision points (D5's center logic) using the conditions in the spec. Flame tiles are computed once when the fire starts.
 - **Flee:** set by `game.js` when the count of enemies not popped, crushed or escaped drops to 1:
   1. After 60 steps, `fleeUp` targets (current x, surface center y) as a ghost.
-  2. On arrival it switches to `fleeWalk`, moving left at flee speed.
-  3. When its x is below −128 it becomes `escaped`.
+  2. On arrival it switches to `fleeWalk`, moving toward the nearer side edge (left from columns 0–6, right from 7–13) at flee speed.
+  3. When its center is half a tile past that edge it becomes `escaped`.
   An inflated enemy picks up the flee route after it recovers.
 - All RNG calls go through the game's seeded RNG in a fixed order (enemy index order each step), never `Math.random`.
 

@@ -7,6 +7,7 @@ import { createGame, READY_STEPS, COUNTDOWN_STEPS, GAME_OVER_LOCK_STEPS, GEM_STE
 import { getLevel, gemFor } from '../src/core/levels.js';
 import { crushPoints } from '../src/core/boulders.js';
 import { isOpen } from '../src/core/board.js';
+import { generateLevel, validateLayout } from '../src/core/layout.js';
 import { UP, LEFT, DOWN, RIGHT, NONE } from '../src/core/constants.js';
 
 // --- scoring -------------------------------------------------------------------
@@ -182,6 +183,20 @@ test('difficulty progression: monotonic up to level 11, something harder each le
   assert.equal(getLevel(1).ghostSecs, 9); assert.equal(getLevel(11).ghostSecs, 4); assert.equal(getLevel(20).ghostSecs, 4);
   assert.equal(getLevel(1).chase, 0.5); assert.ok(Math.abs(getLevel(11).chase - 0.85) < 1e-9);
   assert.equal(getLevel(1).flame, 0.25); assert.ok(Math.abs(getLevel(11).flame - 0.6) < 1e-9);
+});
+
+test('endless levels: level 256 has a valid board with 8 enemies and plays', () => {
+  const L = generateLevel(77, 256);
+  assert.deepEqual(validateLayout(L), []);
+  const g = playing(77);
+  g.state.level = 255;
+  for (const e of g.state.enemies) e.state = 'gone';
+  g.step();
+  steps(g, LEVEL_CLEAR_STEPS + READY_STEPS);
+  assert.equal(g.state.level, 256);
+  assert.equal(g.phase, 'playing');
+  assert.equal(g.state.enemies.length, 8);
+  steps(g, 600);
 });
 
 test('pause: nothing advances while paused or during the 3-second resume countdown', () => {

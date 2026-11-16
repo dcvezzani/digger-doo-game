@@ -50,14 +50,18 @@ Each enemy SHALL turn into floating ghost eyes when its ghost timer runs out. Th
 
 - It SHALL drift in a straight line toward Doo's current position at the level's ghost speed, passing through dirt and boulders and staying within the board.
 - It SHALL be harmless, and SHALL NOT be hooked or crushed.
-- After at least 1.5 seconds as a ghost, as soon as the tile under its center is open and holds no boulder, it SHALL become solid again at that tile's center, and its ghost timer SHALL restart.
+- It SHALL become solid again at the center of the first open, boulder-free tile its center reaches after passing through solid dirt, whether that tile is where Doo is or only along the way. A ghost that has not passed through dirt SHALL become solid at the first such tile once it has been a ghost for 1.5 seconds. Its ghost timer SHALL then restart.
 
 #### Scenario: Ghost reaches Doo's tunnel
 - **WHEN** an enemy's ghost timer runs out while Doo is in a tunnel not connected to the enemy's burrow
 - **THEN** the enemy drifts as ghost eyes through the dirt toward Doo and becomes solid again once it is over an open tile
 
+#### Scenario: Becomes solid along the way
+- **WHEN** a ghost drifting toward Doo crosses dirt and then passes over another open tunnel before reaching Doo's tunnel
+- **THEN** it becomes solid in that other tunnel
+
 #### Scenario: Ghost is harmless
-- **WHEN** a ghost passes over Doo before 1.5 seconds have passed since it turned into a ghost
+- **WHEN** a ghost passes over Doo before it has become solid again
 - **THEN** Doo does not lose a life
 
 ### Requirement: Sizzler flame
@@ -87,14 +91,18 @@ The flame SHALL NOT dig dirt or harm enemies.
 When exactly one enemy is left that has not been popped or crushed, that enemy SHALL flee once it is not inflated:
 
 1. After 1 second it SHALL turn into a ghost and drift straight up to the surface row, at its own column.
-2. It SHALL become solid on the surface and walk left along it at the flee speed.
-3. When it walks off the left edge of column 0, it SHALL escape.
+2. It SHALL become solid on the surface and walk along it, at the flee speed, toward the nearer side edge: left from columns 0–6, right from columns 7–13.
+3. When it walks off that edge of the board, it SHALL escape.
 
 While walking on the surface it SHALL be harmful and SHALL be able to be hooked and inflated. A fleeing enemy that recovers from inflation SHALL continue fleeing. A fleeing enemy SHALL NOT breathe flame.
 
 #### Scenario: Last enemy escapes
-- **WHEN** only one Gloop remains and Doo does not stop it
-- **THEN** it rises to the surface, walks left and leaves the board, and the level ends
+- **WHEN** only one Gloop remains in column 11 and Doo does not stop it
+- **THEN** it rises to the surface, walks right and leaves the board, and the level ends
+
+#### Scenario: Nearer edge on the left
+- **WHEN** the last enemy rises to the surface in column 3
+- **THEN** it walks left toward column 0
 
 ### Requirement: Enemy speeds
 Enemy speeds SHALL be set per level as percentages of Doo's walking speed:
@@ -110,6 +118,13 @@ Enemy speeds SHALL be independent of the display frame rate.
 #### Scenario: Faster on later levels
 - **WHEN** level 5 starts
 - **THEN** roaming enemies move faster than on level 1
+
+### Requirement: Enemies grow bolder as they are defeated
+Once half or fewer of a level's enemies remain (not popped, crushed or escaped), the remaining enemies SHALL roam 15% faster than the level's roaming speed. Their chase chance SHALL also rise by 0.15, up to a maximum of 1. The fleeing enemy SHALL keep its flee speed.
+
+#### Scenario: Half the enemies gone
+- **WHEN** 2 of the 4 enemies on level 1 have been popped
+- **THEN** the remaining 2 roam at 15% above the level 1 roaming speed and chase Doo more often
 
 ### Requirement: Touching enemies
 Doo SHALL lose a life when Doo's body overlaps a solid enemy that is roaming or fleeing, meaning their centers are less than three quarters of a tile apart both horizontally and vertically. Touching a ghost, an inflated enemy, a popped enemy or a crushed enemy SHALL NOT cost a life.

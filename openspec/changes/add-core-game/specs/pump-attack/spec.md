@@ -52,11 +52,11 @@ An enemy at stage 1 or higher SHALL NOT move or breathe flame. Touching it SHALL
 - **THEN** Doo does not lose a life
 
 ### Requirement: Deflating and recovering
-An inflated enemy SHALL lose one stage for every 0.75 seconds that pass without a pump, whether or not it is still hooked. When it reaches stage 0, it SHALL return to its normal behavior, and the hose SHALL be released if it was still hooked.
+An inflated enemy SHALL lose one stage for every 0.75 seconds that pass without a pump. If 0.75 seconds pass without a pump while an enemy is hooked, the hose SHALL disconnect by itself. The enemy SHALL stay frozen and harmless while it deflates. When it reaches stage 0, it SHALL return to its normal behavior.
 
 #### Scenario: Enemy recovers
 - **WHEN** Doo inflates a Gloop to stage 2 and then stops pumping
-- **THEN** about 1.5 seconds later the Gloop is back to normal and moving again
+- **THEN** the hose disconnects about 0.75 seconds after the last pump, and about 1.5 seconds after the last pump the Gloop is back to normal and moving again
 
 ### Requirement: Moving cancels the pump
 Starting a new direction while the hose is out SHALL withdraw the hose and release any hooked enemy, and Doo SHALL move in that direction. A new direction is a new key press, a new drag direction or a new D-pad press. Losing a life SHALL also withdraw the hose. A direction that was already held when the hose was fired SHALL NOT cancel it. Once the hose is withdrawn by a miss or a pop, Doo SHALL move again in that held direction.

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { playing, blank, open, row, col, addEnemy, steps, stepUntil, tap, events, types, center } from './helpers.js';
 import { UP, LEFT, DOWN, RIGHT } from '../src/core/constants.js';
 import { chooseDir, CHARGE_STEPS, GHOST_MIN_STEPS, GHOST_GRACE_STEPS } from '../src/core/enemies.js';
+import { boldLevel } from '../src/core/game.js';
 import { getLevel } from '../src/core/levels.js';
 import { createRng } from '../src/core/rng.js';
 import { isOpen } from '../src/core/board.js';
@@ -113,7 +114,7 @@ test('Sizzler flame is cancelled by inflation', () => {
   assert.equal(g.phase, 'playing');
 });
 
-test('the last enemy flees: waits, rises to the surface, walks left and escapes; the level ends', () => {
+test('the last enemy flees: waits, rises to the surface, walks to the nearer (right) edge and escapes; the level ends', () => {
   const g = blank(playing(), { px: 6, py: 8, anchor: false });
   const gone = addEnemy(g, 'gloop', 0, 16);
   gone.state = 'gone';
@@ -124,10 +125,54 @@ test('the last enemy flees: waits, rises to the surface, walks left and escapes;
   stepUntil(g, () => e.state === 'fleeUp', 100);
   stepUntil(g, () => e.state === 'fleeWalk', 1000);
   assert.equal(e.y, center(1));
+  assert.equal(e.dir, RIGHT, 'column 11 is nearer the right edge');
   stepUntil(g, () => e.state === 'escaped', 1000);
+  assert.ok(e.x > 14 * 256);
   g.step();
   assert.equal(g.phase, 'levelClear');
   assert.ok(types(events(g)).includes('fleeEnd'));
+});
+
+test('a last enemy in column 3 walks left along the surface', () => {
+  const g = blank(playing(), { px: 10, py: 12, anchor: false });
+  const gone = addEnemy(g, 'gloop', 0, 16);
+  gone.state = 'gone';
+  const e = addEnemy(g, 'gloop', 3, 14, LEFT);
+  stepUntil(g, () => e.state === 'fleeWalk', 1500);
+  assert.equal(e.dir, LEFT);
+  const x = e.x;
+  steps(g, 10);
+  assert.ok(e.x < x);
+});
+
+test('ghost becomes solid along the way: crossing dirt into another tunnel', () => {
+  const g = blank(playing(), { px: 2, py: 4 });
+  open(g, row(4, 0, 4));
+  open(g, row(9, 3, 9)); // a tunnel between the enemy and Doo
+  const e = addEnemy(g, 'gloop', 9, 13, LEFT, { ghostTimer: 1 });
+  open(g, row(13, 8, 10));
+  g.step();
+  assert.equal(e.state, 'ghost');
+  stepUntil(g, () => e.state !== 'ghost', 2000);
+  assert.equal(tileOf(e.y), 9, 'solid in the tunnel it crossed, not Doo\'s');
+});
+
+test('enemies grow bolder once half or fewer remain', () => {
+  const g = blank(playing(), { px: 1, py: 3, anchor: false });
+  const es = [0, 1, 2, 3].map((i) => addEnemy(g, 'gloop', 2 + i * 3, 12, RIGHT));
+  const base = g.state.lvl;
+  assert.equal(boldLevel(g.state), base);
+  es[0].state = 'gone'; es[1].state = 'popped';
+  const bold = boldLevel(g.state);
+  assert.equal(bold.roamSpeed, Math.round(base.roamSpeed * 1.15));
+  assert.ok(Math.abs(bold.chase - (base.chase + 0.15)) < 1e-9);
+  // and it shows in movement: a remaining enemy covers more ground per second
+  open(g, row(14, 0, 13));
+  const run = (gg) => { const e = gg.state.enemies[3]; e.x = center(0); e.y = center(14); e.dir = RIGHT; e.acc = 0; steps(gg, 60); return e.x; };
+  const fast = run(g);
+  es[0].state = 'roam'; es[1].state = 'roam';
+  const slow = run(g);
+  assert.ok(fast > slow, `${fast} > ${slow}`);
 });
 
 test('popping the fleeing enemy ends the level', () => {

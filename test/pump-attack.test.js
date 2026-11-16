@@ -118,9 +118,11 @@ test('deflating: stage 2 recovers about 1.5 s after the last pump and moves agai
   steps(g, PUMP_MIN_STEPS); tap(g); g.step();
   assert.equal(e.stage, 2);
   const t0 = g.state.tick;
+  stepUntil(g, () => g.state.hose.state === 'idle', 200);
+  assert.ok(Math.abs(g.state.tick - t0 - DEFLATE_STEPS) <= 2, 'hose lets go ~0.75 s after the last pump');
+  assert.equal(e.state, 'inflated', 'still frozen while deflating');
   stepUntil(g, () => e.state === 'roam', 200);
   assert.ok(Math.abs(g.state.tick - t0 - 2 * DEFLATE_STEPS) <= 2);
-  assert.equal(g.state.hose.state, 'idle', 'hose released');
   const x = e.x;
   steps(g, 20);
   assert.notEqual(e.x, x, 'moving again');

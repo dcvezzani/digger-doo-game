@@ -4,7 +4,7 @@
 
 We want an original arcade dig-and-inflate game that people play mainly on their phones. It is built spec-first, like its sibling project Neon Nibbler, so each mechanic has a written, testable contract before any code exists. This first change defines a complete playable loop: layered dirt, digging, a pump attack, falling rocks, two enemy types, lives and levels. It is designed for touchscreens in portrait first and still playable with a keyboard on desktop.
 
-The game takes inspiration from the classic tunnel-digging arcade genre but has its own identity. **Digger Doo** stars *Doo*, a small mole in a hard hat with a headlamp. Doo tunnels through four bands of colored earth and fights two kinds of burrowing pests with a *puff pump*:
+The game takes inspiration from the classic tunnel-digging arcade genre but has its own identity. The genre's rules, as described in the Wikipedia article on the 1982 arcade game *Dig Dug* (https://en.wikipedia.org/wiki/Dig_Dug), were used as the reference for mechanics such as the pump timing out, ghosts becoming solid on the way, enemies speeding up and the escape route. **Digger Doo** stars *Doo*, a small mole in a hard hat with a headlamp. Doo tunnels through four bands of colored earth and fights two kinds of burrowing pests with a *puff pump*:
 
 - *Gloops*: wobbly jelly blobs.
 - *Sizzlers*: spiky ember beetles that spit a short flame jet.
@@ -32,14 +32,15 @@ Doo can also loosen *boulders* and drop them on the pests. The game does not reu
 - Two enemy types:
   - Both roam the tunnels and turn into drifting *ghost eyes* to pass through solid dirt toward Doo.
   - Sizzlers can also breathe a short horizontal flame through dirt.
-  - When only one enemy is left, it flees to the surface and escapes off the left edge.
+  - As enemies are defeated, the rest grow faster and bolder.
+  - When only one enemy is left, it flees to the surface and escapes off the nearer side edge.
 - Scoring:
   - 10 points per newly dug tile.
   - Pop points that rise with depth, doubled for a Sizzler popped from the side.
   - A rising table for crushing several enemies with one boulder.
   - A bonus gem that appears after two boulders have fallen.
   - Extra lives at 10,000 points and every 40,000 points after that.
-- 3 starting lives, levels that get harder (more and faster enemies, more frequent ghosting and flames), and a game over.
+- 3 starting lives, endless levels that get harder (more and faster enemies, more frequent ghosting and flames), and a game over.
 - A HUD with score, saved high score, reserve lives and level, plus large touch buttons for pause, sound and settings.
 - Retro sound effects synthesized with the Web Audio API, and short vibrations on key events on devices that support them. One sound toggle controls both.
 - A headless test suite for game logic using Node's built-in test runner, plus Playwright browser checks.

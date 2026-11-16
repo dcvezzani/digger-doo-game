@@ -17,6 +17,9 @@ export const FLAME_RANGE = 4;
 export const FLAME_TILES = 3;
 export const FLEE_WAIT_STEPS = secs(1);
 export const POP_STEPS = secs(0.5);
+export const FLEE_SPLIT_COL = 6;        // columns 0-6 flee left, 7-13 flee right
+export const BOLD_SPEED = 1.15;         // roam speed factor once half the enemies are gone
+export const BOLD_CHASE = 0.15;
 const ROLL_GAP_STEPS = secs(0.5); // after a failed flame roll, wait before rolling again
 
 /** States in which an enemy is solid: it can be hooked and crushed. */
@@ -32,7 +35,7 @@ export function createEnemy(id, kind, tx, ty, dir = UP) {
     x: center(tx), y: center(ty), dir, acc: 0,
     state: 'roam', resume: 'roam', stage: 0, lastPump: 0,
     ghostTimer: 0, ghostSteps: 0, flameCooldown: 0, timer: 0, flameTiles: null,
-    flee: false, fleeWait: 0, wobble: 0,
+    flee: false, fleeWait: 0, fleeDir: LEFT, crossedDirt: false,
   };
 }
 
@@ -135,6 +138,7 @@ function drift(e, tx, ty, units) {
 export function becomeGhost(e, ctx) {
   e.state = 'ghost';
   e.ghostSteps = 0;
+  e.crossedDirt = false;
   ctx.emit('ghost', { enemy: e.id });
 }
 
@@ -143,9 +147,12 @@ function ghost(e, ctx) {
   drift(e, ctx.doo.x, ctx.doo.y, takeUnits(e, ctx.lvl.ghostSpeed));
   e.x = Math.max(center(0), Math.min(center(COLS - 1), e.x));
   e.y = Math.max(center(DIRT_TOP), Math.min(center(DIRT_BOTTOM), e.y));
-  if (e.ghostSteps < GHOST_MIN_STEPS) return;
   const tx = tileOf(e.x), ty = tileOf(e.y);
-  if (ty >= DIRT_TOP && isOpen(ctx.board, tx, ty) && !ctx.blocked(tx, ty)) {
+  if (ty >= DIRT_TOP && !isOpen(ctx.board, tx, ty)) { e.crossedDirt = true; return; }
+  if (ty < DIRT_TOP || ctx.blocked(tx, ty)) return; // boulders don't count as dirt
+  // Solid again at the first open tile after crossing dirt (destination or
+  // along the way); a ghost that never crossed dirt waits for the fallback.
+  if (e.crossedDirt || e.ghostSteps >= GHOST_MIN_STEPS) {
     e.x = center(tx); e.y = center(ty);
     e.state = 'roam';
     e.acc = 0;
@@ -190,16 +197,17 @@ export function updateEnemy(e, ctx) {
       if (arrived) {
         e.x = center(Math.max(0, Math.min(COLS - 1, tileOf(e.x))));
         e.state = 'fleeWalk';
-        e.dir = LEFT;
+        e.dir = tileOf(e.x) <= FLEE_SPLIT_COL ? LEFT : RIGHT; // nearer side edge
+        e.fleeDir = e.dir;
         e.acc = 0;
         ctx.emit('solid', { enemy: e.id });
       }
       return;
     }
     case 'fleeWalk':
-      e.dir = LEFT;
-      e.x -= takeUnits(e, ctx.lvl.fleeSpeed);
-      if (e.x < -UNITS / 2) { e.state = 'escaped'; ctx.emit('escaped', { enemy: e.id }); }
+      e.dir = e.fleeDir ?? LEFT;
+      e.x += DX[e.dir] * takeUnits(e, ctx.lvl.fleeSpeed);
+      if (e.x < -UNITS / 2 || e.x > COLS * UNITS + UNITS / 2) { e.state = 'escaped'; ctx.emit('escaped', { enemy: e.id }); }
       return;
     case 'popped':
       if (--e.timer <= 0) e.state = 'gone';

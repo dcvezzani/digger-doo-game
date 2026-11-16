@@ -84,6 +84,7 @@ test('ghosts are not crushed', () => {
   open(g, col(4, 6, 8));
   const e = addEnemy(g, 'gloop', 4, 7);
   e.state = 'ghost';
+  e.ghostSteps = -10000; // stay a ghost for the whole fall
   stepUntil(g, () => b.state === 'crumble', 300);
   assert.equal(e.state, 'ghost');
 });

@@ -4,13 +4,14 @@ An original, mobile-first arcade dig-and-inflate game for the browser. Tunnel th
 
 | Pest | Look | Behaviour |
 |---|---|---|
-| **Gloop** | wobbly teal jelly | Roams the tunnels and drifts through dirt as ghost eyes to reach you |
+| **Gloop** | wobbly teal jelly | Roams the tunnels and drifts through dirt as ghost eyes, becoming solid at the first tunnel it reaches |
 | **Sizzler** | spiky ember beetle | Same, and spits a 3-tile flame through dirt after a short warning glow |
 
 - **Pump:** hook a pest with the hose and pump it 4 times to pop it. Deeper layers score more: 200 / 300 / 400 / 500. A Sizzler popped from the side scores double.
 - **Boulders:** dig out the dirt under a boulder, step away, and it falls. Crushing several pests with one boulder scores up to 15,000.
 - **Bonus gem:** drop two boulders and a gem appears at the start tile for 10 seconds.
-- **Last pest:** when only one pest is left, it flees to the surface. Stop it before it walks off the left edge.
+- **Bolder pests:** once half the pests are gone, the rest move faster and chase harder.
+- **Last pest:** when only one pest is left, it rises to the surface and runs for the nearer side edge. Stop it before it gets away.
 
 Plain HTML5 Canvas and JavaScript modules. No build step, no runtime dependencies, no audio files. It was built spec-first with [OpenSpec](https://github.com/Fission-AI/OpenSpec), following the same stack and conventions as the sibling project [Neon Nibbler](https://github.com/dcvezzani/neon-nibbler).
 
@@ -44,7 +45,7 @@ After one online visit the game works with no connection. On `localhost` the off
 | Pause | Pause button (top right) | P or Escape |
 | Sound and vibration | Sound button or Settings | M |
 
-Doo turns at tile centers. If you ask for a turn between tiles, Doo finishes the step to the next center and then turns. Reversing is instant. Digging is a bit slower than walking through a tunnel you've already dug. Firing the hose stops Doo; a new direction pulls the hose back. Resuming from pause gives a 3-2-1 countdown. The game pauses itself when you switch apps or lock the phone.
+Doo turns at tile centers. If you ask for a turn between tiles, Doo finishes the step to the next center and then turns. Reversing is instant. Digging is a bit slower than walking through a tunnel you've already dug. Firing the hose stops Doo; a new direction pulls the hose back, and the hose lets go by itself if you stop pumping. Levels never run out. Resuming from pause gives a 3-2-1 countdown. The game pauses itself when you switch apps or lock the phone.
 
 ## Tests
 
@@ -81,7 +82,7 @@ Automated checks can't cover these. Try them on a real iPhone (Safari, installed
 
 - [ ] Drag-and-hold digging feels responsive. L-shaped drags turn. Lifting stops Doo. A second-finger tap pumps while steering. The D-pad and PUMP button work when on.
 - [ ] Sound starts on the first tap. It works again after locking and unlocking the phone and after a call.
-- [ ] Every event has its own sound: dig crunch, hose, rising pump stages, pop, boulder rattle and thud, flame hiss, gem, extra life, losing a life, round clear, game start. The flee alarm loops while the last pest escapes and stops when it's caught.
+- [ ] Every event has its own sound: dig crunch, hose, rising pump stages, pop, boulder rattle and thud, flame hiss, gem, extra life, losing a life, round clear, game start. The flee alarm loops while the last pest escapes, and stops when it's caught or gets away.
 - [ ] Android vibrates on losing a life, popping, crushing and clearing a round. Muting stops both sound and vibration.
 - [ ] Mute survives closing and reopening the app.
 - [ ] Inflation stages are clearly bigger each pump. Sizzlers glow before they breathe fire. Ghost eyes are readable against the dirt.

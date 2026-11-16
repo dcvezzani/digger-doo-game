@@ -119,6 +119,19 @@
 - [x] 9.3 Run the full unit and browser suites and play one full level and a game over in the browser.
   - Verify: all tests pass and the screenshots in `e2e/output/` look right.
 
+## 10. Refinements from the reference article
+
+- [x] 10.1 Disconnect the hose by itself after 0.75 s without a pump while the enemy keeps deflating.
+  - Verify: the pump-attack "Enemy recovers" test checks the hose is released at the first deflation and the enemy recovers at 1.5 s.
+- [x] 10.2 Make ghosts solid at the first open tile after crossing dirt (with the 1.5 s fallback for ghosts that never crossed dirt).
+  - Verify: a test where a ghost crosses dirt into a tunnel that is not Doo's and becomes solid there.
+- [x] 10.3 Make enemies bolder when half or fewer remain (roam ×1.15, chase +0.15).
+  - Verify: a test that compares a remaining enemy's distance per step before and after half the enemies are gone.
+- [x] 10.4 Flee toward the nearer side edge.
+  - Verify: tests for an escape to the right from column 11 and a walk to the left from column 3; README updated.
+- [x] 10.5 Endless levels.
+  - Verify: a test that level 256 generates a valid board with 8 enemies and plays.
+
 ## Workflow follow-up
 
 - After review, sync the delta specs into `openspec/specs/` and archive the change (`openspec archive add-core-game`).

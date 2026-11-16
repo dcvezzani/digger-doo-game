@@ -11,7 +11,7 @@ import { generateLevel } from './layout.js';
 import { createPlayer, resetPlayer, updatePlayer } from './player.js';
 import { tileOf, takeUnits } from './movement.js';
 import {
-  createEnemy, resetEnemy, updateEnemy, inflate, deflate, SOLID, HARMFUL, DONE, POP_STEPS,
+  createEnemy, resetEnemy, updateEnemy, inflate, deflate, SOLID, HARMFUL, DONE, POP_STEPS, BOLD_SPEED, BOLD_CHASE,
 } from './enemies.js';
 import {
   createBoulder, updateBoulders, boulderBlocks, boulderInTile, crushPoints,
@@ -312,7 +312,7 @@ function playStep(g) {
   const ctx = {
     board: g.board,
     rng: g.rng,
-    lvl: g.lvl,
+    lvl: boldLevel(g),
     doo,
     roundTick: g.roundTick,
     blocked: enemyBlocked(g),
@@ -351,6 +351,12 @@ function playStep(g) {
     setPhase(g, 'levelClear', LEVEL_CLEAR_STEPS);
     emit(g, 'levelClear', { level: g.level });
   }
+}
+
+/** Level values for enemies; bolder once half or fewer of the level's enemies remain. */
+export function boldLevel(g) {
+  if (remaining(g) * 2 > g.enemies.length) return g.lvl;
+  return { ...g.lvl, roamSpeed: Math.round(g.lvl.roamSpeed * BOLD_SPEED), chase: Math.min(1, g.lvl.chase + BOLD_CHASE) };
 }
 
 export function remaining(g) { return g.enemies.filter((e) => !DONE.has(e.state)).length; }
@@ -496,7 +502,8 @@ function updateHose(g) {
     h.len = 0;
     if (--h.timer <= 0) h.state = 'idle';
   } else if (h.state === 'hooked') {
-    if (!h.target || h.target.state !== 'inflated') releaseHose(g);
+    // The hose lets go when the player stops pumping; the enemy keeps deflating.
+    if (!h.target || h.target.state !== 'inflated' || g.tick - g.lastPumpTick >= DEFLATE_STEPS) releaseHose(g);
   }
   h.lastTick = g.tick;
 }

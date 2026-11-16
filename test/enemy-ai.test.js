@@ -167,6 +167,20 @@ test('fleeing: a solid riser in an open shaft can be hooked and resumes rising a
   assert.equal(e.state, 'fleeRise');
 });
 
+test('a ghost that becomes the last enemy over a tunnel turns solid and rises at once', () => {
+  const g = blank(playing(), { px: 10, py: 14, anchor: false });
+  const other = addEnemy(g, 'gloop', 0, 16);
+  open(g, row(9, 1, 8));
+  const e = addEnemy(g, 'gloop', 4, 9, UP);
+  e.state = 'ghost'; e.ghostSteps = 0; e.crossedDirt = false;
+  other.state = 'gone';
+  g.step(); g.step();
+  assert.equal(e.state, 'fleeRise');
+  const y = e.y;
+  steps(g, 5);
+  assert.ok(e.y < y, 'rising');
+});
+
 test('a last enemy in column 3 walks left along the surface', () => {
   const g = blank(playing(), { px: 10, py: 12, anchor: false });
   const gone = addEnemy(g, 'gloop', 0, 16);

@@ -1,7 +1,7 @@
 // Service worker: precaches every game file so Digger Doo plays offline.
-// Bump VERSION on each release; the new cache replaces the old one on
+// VERSION is a hash of the game files (npm run stamp); the new cache replaces the old one on
 // activation, so a new version is running by the second launch at the latest.
-const VERSION = 'v1';
+const VERSION = 'h5132114af60e';
 const CACHE = `digger-doo-${VERSION}`;
 const FILES = [
   './',

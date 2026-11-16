@@ -90,7 +90,7 @@ The flame SHALL NOT dig dirt or harm enemies.
 ### Requirement: The last enemy flees
 When exactly one enemy is left that has not been popped or crushed, that enemy SHALL flee once it is not inflated:
 
-1. After 1 second it SHALL rise straight up its own column to the surface row.
+1. After 1 second it SHALL rise straight up its own column to the surface row. If it is drifting as a ghost when it becomes the last enemy, it SHALL start rising at once.
 2. While it rises, it SHALL be ghost eyes only while its center is over solid dirt (or a boulder), moving at the ghost speed. While its center is over open ground, it SHALL be solid and move at the flee speed.
 3. On the surface it SHALL walk, at the flee speed, toward the nearer side edge: left from columns 0–6, right from columns 7–13.
 4. When it walks off that edge of the board, it SHALL escape.
@@ -104,6 +104,10 @@ Whenever it is solid, rising through open ground or walking on the surface, it S
 #### Scenario: Solid in cleared ground while fleeing
 - **WHEN** the last enemy rises through 3 rows of solid dirt and then up an open vertical tunnel to the surface
 - **THEN** it is ghost eyes while in the dirt, and solid (it can be hooked and is harmful) while in the open tunnel
+
+#### Scenario: Last enemy was a ghost
+- **WHEN** the last other enemy is popped while the remaining enemy is drifting as a ghost
+- **THEN** it starts rising straight up at once, and it is solid whenever its center is over open ground
 
 #### Scenario: Nearer edge on the left
 - **WHEN** the last enemy rises to the surface in column 3

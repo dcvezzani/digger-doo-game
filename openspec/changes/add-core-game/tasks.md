@@ -137,6 +137,11 @@
 - [x] 10.7 Let the hose pass through ghosts without effect.
   - Verify: a test with a ghost in front of a solid Gloop where the hose hooks the Gloop.
 
+- [x] 10.8 A last enemy that is mid-drift as a ghost starts rising at once (ghost only over dirt).
+  - Verify: a test that makes a drifting ghost the last enemy over an open tunnel and sees it become solid and rise.
+- [x] 10.9 Stamp the service worker cache version from the game files' contents so a changed file always reaches installed copies.
+  - Verify: `npm run stamp` writes the version, and a unit test fails if `sw.js`'s version doesn't match the files.
+
 ## Workflow follow-up
 
 - After review, sync the delta specs into `openspec/specs/` and archive the change (`openspec archive add-core-game`).

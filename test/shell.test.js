@@ -8,6 +8,7 @@ import { createGame } from '../src/core/game.js';
 import { createSwipe } from '../src/core/swipe.js';
 import { createKeyStack } from '../src/input/keyboard.js';
 import { UP, LEFT, DOWN, RIGHT, NONE, VIEW_W, VIEW_H, TILE } from '../src/core/constants.js';
+import { contentVersion, stampedVersion } from '../tools/sw-version.mjs';
 
 function memStore() {
   const m = new Map();
@@ -101,6 +102,10 @@ test('offline: the service worker precaches every game file; manifest is complet
   assert.equal(manifest.name, 'Digger Doo');
   assert.ok(manifest.icons.some((i) => i.purpose === 'maskable'));
   assert.ok(manifest.icons.some((i) => i.sizes === '512x512'));
+});
+
+test('offline: the cache version matches the game files (run npm run stamp after changes)', () => {
+  assert.equal(stampedVersion('.'), contentVersion('.'), 'sw.js VERSION is stale: run npm run stamp');
 });
 
 test('one input model: the same timed inputs by drag and by keys give identical states', () => {

@@ -106,4 +106,4 @@ openspec/     specs and change proposals (spec-driven development with OpenSpec)
 tools/        dev server and icon generator
 ```
 
-When you change a game file, add it to `FILES` in `sw.js` and bump `VERSION`. A unit test fails if a file is missing from the list.
+When you add a game file, list it in `FILES` in `sw.js`. After changing any game file, run `npm run stamp`, which sets `VERSION` to a hash of the files so installed copies pick up the change. Unit tests fail if a file is missing from the list or the version is stale.

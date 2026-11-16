@@ -181,6 +181,13 @@ export function updateEnemy(e, ctx) {
       roam(e, ctx.lvl.roamSpeed, ctx);
       return;
     case 'ghost':
+      if (e.flee) { // became the last enemy mid-drift: start rising now
+        const tx = tileOf(e.x), ty = tileOf(e.y);
+        e.state = ty >= DIRT_TOP && (!isOpen(ctx.board, tx, ty) || ctx.blocked(tx, ty)) ? 'fleeUp' : 'fleeRise';
+        if (e.state === 'fleeRise') ctx.emit('solid', { enemy: e.id });
+        e.acc = 0;
+        return;
+      }
       ghost(e, ctx);
       return;
     case 'charge':

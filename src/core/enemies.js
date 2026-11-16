@@ -23,9 +23,9 @@ export const BOLD_CHASE = 0.15;
 const ROLL_GAP_STEPS = secs(0.5); // after a failed flame roll, wait before rolling again
 
 /** States in which an enemy is solid: it can be hooked and crushed. */
-export const SOLID = new Set(['roam', 'charge', 'fire', 'fleeWalk', 'inflated']);
+export const SOLID = new Set(['roam', 'charge', 'fire', 'fleeRise', 'fleeWalk', 'inflated']);
 /** States in which touching the enemy costs Doo a life. */
-export const HARMFUL = new Set(['roam', 'charge', 'fire', 'fleeWalk']);
+export const HARMFUL = new Set(['roam', 'charge', 'fire', 'fleeRise', 'fleeWalk']);
 /** States that no longer count as a remaining enemy. */
 export const DONE = new Set(['popped', 'crushed', 'gone', 'escaped']);
 
@@ -167,7 +167,13 @@ export function updateEnemy(e, ctx) {
   switch (e.state) {
     case 'roam':
       if (e.flee) {
-        if (--e.fleeWait <= 0) { e.state = 'fleeUp'; e.acc = 0; ctx.emit('ghost', { enemy: e.id }); return; }
+        if (--e.fleeWait <= 0) {
+          const tx = tileOf(e.x), ty = tileOf(e.y);
+          e.state = isOpen(ctx.board, tx, ty) && !ctx.blocked(tx, ty) ? 'fleeRise' : 'fleeUp';
+          e.acc = 0;
+          if (e.state === 'fleeUp') ctx.emit('ghost', { enemy: e.id });
+          return;
+        }
       } else if (--e.ghostTimer <= 0 && ctx.roundTick >= GHOST_GRACE_STEPS) {
         becomeGhost(e, ctx);
         return;
@@ -192,8 +198,18 @@ export function updateEnemy(e, ctx) {
         e.flameCooldown = FLAME_COOLDOWN_STEPS;
       }
       return;
-    case 'fleeUp': {
-      const arrived = drift(e, e.x, center(SURFACE_ROW), takeUnits(e, ctx.lvl.ghostSpeed));
+    case 'fleeUp':
+    case 'fleeRise': {
+      // Rise straight up the column: ghost eyes over dirt, solid over open ground.
+      const speed = e.state === 'fleeUp' ? ctx.lvl.ghostSpeed : ctx.lvl.fleeSpeed;
+      const col = Math.max(0, Math.min(COLS - 1, tileOf(e.x)));
+      const arrived = drift(e, center(col), center(SURFACE_ROW), takeUnits(e, speed));
+      if (!arrived) {
+        const tx = tileOf(e.x), ty = tileOf(e.y);
+        const solidGround = ty >= DIRT_TOP && (!isOpen(ctx.board, tx, ty) || ctx.blocked(tx, ty));
+        const next = solidGround ? 'fleeUp' : 'fleeRise';
+        if (next !== e.state) { e.state = next; ctx.emit(next === 'fleeUp' ? 'ghost' : 'solid', { enemy: e.id }); }
+      }
       if (arrived) {
         e.x = center(Math.max(0, Math.min(COLS - 1, tileOf(e.x))));
         e.state = 'fleeWalk';
@@ -220,7 +236,7 @@ export function updateEnemy(e, ctx) {
 /** Inflate a hooked enemy one stage (or hook it at stage 1). */
 export function inflate(e, tick) {
   if (e.state !== 'inflated') {
-    e.resume = e.flee ? (e.state === 'fleeWalk' ? 'fleeWalk' : 'roam') : 'roam';
+    e.resume = e.flee && (e.state === 'fleeWalk' || e.state === 'fleeRise') ? e.state : 'roam';
     e.state = 'inflated';
     e.stage = 0;
     e.flameTiles = null;

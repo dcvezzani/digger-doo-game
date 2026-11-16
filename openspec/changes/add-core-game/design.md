@@ -151,7 +151,8 @@ Each enemy has a kind (`gloop`/`sizzler`) and a state:
 | `inflated` | stage 1–3, frozen |
 | `popped` | Burst animation, then removed |
 | `crushed` | Carried by a boulder |
-| `fleeUp` | Ghost drifting up to the surface |
+| `fleeUp` | Rising to the surface through dirt, as ghost eyes |
+| `fleeRise` | Rising to the surface through open ground, solid |
 | `fleeWalk` | Walking left along the surface |
 | `escaped` | Left the board |
 | `charge` | Sizzler warning glow, 36 steps |
@@ -162,7 +163,7 @@ Each enemy has a kind (`gloop`/`sizzler`) and a state:
 - **Bolder when outnumbered:** each step `game.js` builds the enemy context's level values. When the remaining enemies are at most half the level's count, roam speed is ×1.15 and chase chance +0.15 (capped at 1).
 - **Flame:** checked at roam decision points (D5's center logic) using the conditions in the spec. Flame tiles are computed once when the fire starts.
 - **Flee:** set by `game.js` when the count of enemies not popped, crushed or escaped drops to 1:
-  1. After 60 steps, `fleeUp` targets (current x, surface center y) as a ghost.
+  1. After 60 steps it rises toward (its column's center, surface center y). Each step the tile under its center picks its form: solid dirt or a boulder gives `fleeUp` (ghost eyes, ghost speed, harmless, not hookable); open ground gives `fleeRise` (solid, flee speed, harmful, hookable, crushable). An enemy inflated during `fleeRise` resumes `fleeRise` when it recovers.
   2. On arrival it switches to `fleeWalk`, moving toward the nearer side edge (left from columns 0–6, right from 7–13) at flee speed.
   3. When its center is half a tile past that edge it becomes `escaped`.
   An inflated enemy picks up the flee route after it recovers.

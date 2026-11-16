@@ -31,7 +31,11 @@ When the extending hose touches a solid enemy, the hose SHALL stop at that enemy
 
 #### Scenario: Ghosts cannot be hooked
 - **WHEN** the hose passes over a tile where an enemy is drifting as a ghost
-- **THEN** the enemy is not hooked
+- **THEN** the enemy is not hooked and is not affected, and the hose keeps extending past it
+
+#### Scenario: Solid enemy behind a ghost
+- **WHEN** a ghost is 1 tile along the hose's path and a solid Gloop is 2 tiles along it
+- **THEN** the hose passes through the ghost and hooks the Gloop
 
 ### Requirement: Inflating and popping
 Each pump press while an enemy is hooked SHALL inflate it one more stage. Presses SHALL count at most once every 0.2 seconds. Holding the pump input SHALL pump again every 0.3 seconds. At stage 4 the enemy SHALL pop: it shows a burst, is removed from the level, and scores as defined in scoring.

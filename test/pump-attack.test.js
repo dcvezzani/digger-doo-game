@@ -63,6 +63,22 @@ test('ghosts cannot be hooked', () => {
   assert.equal(e.state, 'ghost');
 });
 
+test('the hose passes through a ghost and hooks a solid Gloop behind it', () => {
+  const g = blank(playing());
+  open(g, row(8, 1, 6));
+  facing(g, LEFT);
+  g.state.lvl = { ...g.state.lvl, roamSpeed: 0, ghostSpeed: 0 };
+  const ghost = addEnemy(g, 'gloop', 5, 8, LEFT);
+  ghost.state = 'ghost'; ghost.ghostSteps = -10000;
+  const e = addEnemy(g, 'gloop', 4, 8, LEFT);
+  tap(g);
+  g.step();
+  stepUntil(g, () => g.state.hose.state !== 'out', 20);
+  assert.equal(g.state.hose.state, 'hooked');
+  assert.equal(g.state.hose.target, e);
+  assert.equal(ghost.state, 'ghost', 'ghost unaffected');
+});
+
 test('four stages pop: three more presses at least 0.2 s apart; scores by depth (row 8 = 300)', () => {
   const { g, e } = withGloop();
   tap(g);

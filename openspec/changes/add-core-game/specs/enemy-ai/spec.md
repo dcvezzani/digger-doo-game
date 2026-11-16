@@ -90,15 +90,20 @@ The flame SHALL NOT dig dirt or harm enemies.
 ### Requirement: The last enemy flees
 When exactly one enemy is left that has not been popped or crushed, that enemy SHALL flee once it is not inflated:
 
-1. After 1 second it SHALL turn into a ghost and drift straight up to the surface row, at its own column.
-2. It SHALL become solid on the surface and walk along it, at the flee speed, toward the nearer side edge: left from columns 0–6, right from columns 7–13.
-3. When it walks off that edge of the board, it SHALL escape.
+1. After 1 second it SHALL rise straight up its own column to the surface row.
+2. While it rises, it SHALL be ghost eyes only while its center is over solid dirt (or a boulder), moving at the ghost speed. While its center is over open ground, it SHALL be solid and move at the flee speed.
+3. On the surface it SHALL walk, at the flee speed, toward the nearer side edge: left from columns 0–6, right from columns 7–13.
+4. When it walks off that edge of the board, it SHALL escape.
 
-While walking on the surface it SHALL be harmful and SHALL be able to be hooked and inflated. A fleeing enemy that recovers from inflation SHALL continue fleeing. A fleeing enemy SHALL NOT breathe flame.
+Whenever it is solid, rising through open ground or walking on the surface, it SHALL be harmful and SHALL be able to be hooked, inflated and crushed. A fleeing enemy that recovers from inflation SHALL continue fleeing. A fleeing enemy SHALL NOT breathe flame.
 
 #### Scenario: Last enemy escapes
 - **WHEN** only one Gloop remains in column 11 and Doo does not stop it
 - **THEN** it rises to the surface, walks right and leaves the board, and the level ends
+
+#### Scenario: Solid in cleared ground while fleeing
+- **WHEN** the last enemy rises through 3 rows of solid dirt and then up an open vertical tunnel to the surface
+- **THEN** it is ghost eyes while in the dirt, and solid (it can be hooked and is harmful) while in the open tunnel
 
 #### Scenario: Nearer edge on the left
 - **WHEN** the last enemy rises to the surface in column 3

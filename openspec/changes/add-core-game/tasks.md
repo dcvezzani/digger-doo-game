@@ -132,6 +132,11 @@
 - [x] 10.5 Endless levels.
   - Verify: a test that level 256 generates a valid board with 8 enemies and plays.
 
+- [x] 10.6 While the last enemy rises to the surface, be ghost eyes only over solid dirt and solid (harmful, hookable, crushable, flee speed) over open ground.
+  - Verify: a test that rises through dirt then an open shaft and checks the form in each part, plus a test that hooks it in the shaft.
+- [x] 10.7 Let the hose pass through ghosts without effect.
+  - Verify: a test with a ghost in front of a solid Gloop where the hose hooks the Gloop.
+
 ## Workflow follow-up
 
 - After review, sync the delta specs into `openspec/specs/` and archive the change (`openspec archive add-core-game`).

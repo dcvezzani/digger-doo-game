@@ -133,6 +133,40 @@ test('the last enemy flees: waits, rises to the surface, walks to the nearer (ri
   assert.ok(types(events(g)).includes('fleeEnd'));
 });
 
+test('fleeing: ghost eyes only over solid dirt, solid in an open shaft', () => {
+  const g = blank(playing(), { px: 10, py: 14, anchor: false });
+  const gone = addEnemy(g, 'gloop', 0, 16);
+  gone.state = 'gone';
+  // burrow at row 12, solid dirt rows 9-11, then an open shaft rows 2-8 in column 3
+  const e = addEnemy(g, 'gloop', 3, 12, UP);
+  open(g, col(3, 2, 8));
+  const forms = [];
+  stepUntil(g, () => {
+    const ty = tileOf(e.y);
+    if (e.state === 'fleeUp' || e.state === 'fleeRise') forms.push([ty, e.state]);
+    return e.state === 'fleeWalk';
+  }, 2000);
+  const inDirt = forms.filter(([y]) => y >= 9 && y <= 11).map(([, s]) => s);
+  const inShaft = forms.filter(([y]) => y >= 2 && y <= 8).map(([, s]) => s);
+  assert.ok(inDirt.length && inDirt.every((s) => s === 'fleeUp'), 'ghost in the dirt');
+  assert.ok(inShaft.length && inShaft.every((s) => s === 'fleeRise'), 'solid in the open shaft');
+});
+
+test('fleeing: a solid riser in an open shaft can be hooked and resumes rising after recovering', () => {
+  const g = blank(playing(), { px: 3, py: 2, anchor: false });
+  const gone = addEnemy(g, 'gloop', 0, 16);
+  gone.state = 'gone';
+  const e = addEnemy(g, 'gloop', 3, 9, UP);
+  open(g, col(3, 2, 9));
+  g.state.player.dir = DOWN;
+  stepUntil(g, () => e.state === 'fleeRise' && tileOf(e.y) <= 5, 400);
+  tap(g);
+  stepUntil(g, () => e.state === 'inflated', 20);
+  assert.equal(e.resume, 'fleeRise');
+  stepUntil(g, () => e.state !== 'inflated', 200);
+  assert.equal(e.state, 'fleeRise');
+});
+
 test('a last enemy in column 3 walks left along the surface', () => {
   const g = blank(playing(), { px: 10, py: 12, anchor: false });
   const gone = addEnemy(g, 'gloop', 0, 16);
